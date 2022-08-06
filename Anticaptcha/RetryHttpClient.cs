@@ -7,7 +7,6 @@ using Newtonsoft.Json;
 using Polly;
 
 namespace Anticaptcha{
-    
     internal class RetryHttpClient{
         
         private readonly HttpClient _httpClient;
