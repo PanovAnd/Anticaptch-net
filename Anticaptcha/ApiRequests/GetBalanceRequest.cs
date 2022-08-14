@@ -3,13 +3,8 @@ using System.Text;
 using Newtonsoft.Json;
 
 namespace Anticaptcha.ApiRequests{
-    internal class GetBalanceRequest:IApiRequest{
-        [JsonProperty("clientKey")]
-        public readonly string ApiKey;
-
-        internal GetBalanceRequest(string apiKey){
-            ApiKey = apiKey;
-        }
+    internal class GetBalanceRequest:AuthorizedRequest,IApiRequest{
+        internal GetBalanceRequest(string apiKey) : base(new AuthorizeInfo(apiKey, null)) { }
         
         private const string _anticaptchaEndpoint = @"https://api.anti-captcha.com/getBalance";
         public HttpRequestMessage CreateHttpRequest(){

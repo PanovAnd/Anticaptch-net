@@ -4,19 +4,11 @@ using Anticaptcha.ApiRequests.Tasks;
 using Newtonsoft.Json;
 
 namespace Anticaptcha.ApiRequests{
-    internal class CreateTaskRequest:IApiRequest{
-        [JsonProperty("clientKey")]
-        public readonly string ApiKey;
-        
-        [JsonProperty("softId")]
-        public readonly int SoftId;
-
+    internal class CreateTaskRequest:AuthorizedRequest,IApiRequest{
         [JsonProperty("task")]
         public readonly AnticaptchaTask Task;
 
-        internal CreateTaskRequest(string apiKey, int softId, AnticaptchaTask task){
-            ApiKey = apiKey;
-            SoftId = softId;
+        public CreateTaskRequest(AuthorizeInfo authorizeInfo, AnticaptchaTask task):base(authorizeInfo) {
             Task = task;
         }
 
@@ -25,9 +17,7 @@ namespace Anticaptcha.ApiRequests{
             var request = new HttpRequestMessage(HttpMethod.Post, _anticaptchaEndpoint);
             request.Content = new StringContent(JsonConvert.SerializeObject(this), Encoding.UTF8, "application/json");
             return request;
-        }
-
-        
+        }        
     }
     
     public class CreateTaskResponse : ErrorResponse{
