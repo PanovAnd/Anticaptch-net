@@ -2,6 +2,7 @@
 using Anticaptcha.ApiRequests.Tasks;
 using System;
 using System.Net;
+using System.Net.Http;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,11 +22,17 @@ namespace Anticaptcha {
 
     public class AnticaptchaClient {
         private readonly AuthorizeInfo authorizeInfo;
-        private readonly RetryHttpClient _httpClient = new RetryHttpClient();
+        private readonly RetryHttpClient _httpClient;
 
-        public AnticaptchaClient(string clientKey, int? softId = null) {
+        public AnticaptchaClient(string clientKey, int? softId = null): this(clientKey,softId,null) {}
+        public AnticaptchaClient(string clientKey) : this(clientKey, null, null) { }
+        public AnticaptchaClient(string clientKey, HttpClient httpClient) : this(clientKey, null, httpClient) { }
+
+        public AnticaptchaClient(string clientKey, int? softId, HttpClient httpClient) {
             authorizeInfo = new AuthorizeInfo(clientKey, softId);
+            _httpClient = new RetryHttpClient(httpClient);
         }
+
 
         internal async Task<CheckTaskResponse<T>> SolveCaptchaAsync<T>(AnticaptchaTask task, CancellationToken cancellationToken) where T : ITaskResult {
             ArgumentChecker.ThrowIfNull(task, nameof(task));
@@ -81,7 +88,7 @@ namespace Anticaptcha {
         public async Task<double> GetBalance(CancellationToken cancellationToken) {
             var apiResponse = await _httpClient.GetResponseAsJsonAsync<GetBalanceResponse>(new GetBalanceRequest(authorizeInfo.ApiKey).CreateHttpRequest(), cancellationToken);
 
-            if (apiResponse.Failed) throw apiResponse.ExtractException();
+            if (apiResponse.IsFailed) throw apiResponse.ExtractException();
 
             return apiResponse.Balance;
         }
@@ -99,28 +106,13 @@ namespace Anticaptcha {
 
             var apiResponse = await _httpClient.GetResponseAsJsonAsync<T>(request.CreateHttpRequest(), cancellationToken);
 
-            if (apiResponse.Failed) throw apiResponse.ExtractException();
+            if (apiResponse.IsFailed) throw apiResponse.ExtractException();
 
             return apiResponse;
         }
     }
 
-    [Serializable]
-    public class AnticaptchaApiException : Exception {
-        internal AnticaptchaApiException() { }
-        internal AnticaptchaApiException(string message) : base(message) { }
-        internal AnticaptchaApiException(string message, Exception inner) : base(message, inner) { }
-
-        internal AnticaptchaApiException(ErrorResponse response) : base(
-            $"Api error code:{response.ErrorCode}\r\nError message:{response.ErrorDescription}") { }
-
-        protected AnticaptchaApiException(
-            SerializationInfo info,
-            StreamingContext context) : base(info, context) { }
-    }
-
     internal class ArgumentChecker {
-
         public static void ThrowIfNull(object parameter, string parameterName = default) {
             if (parameter is null) throw new ArgumentNullException(parameterName);
         }

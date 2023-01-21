@@ -1,3 +1,5 @@
 Anticaptcha/bin
 Anticaptcha/obj
 .vs/*
+/Anticaptcha.Tests/obj
+/Anticaptcha.Tests/bin

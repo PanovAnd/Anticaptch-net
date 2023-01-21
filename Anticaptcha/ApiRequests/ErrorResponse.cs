@@ -1,4 +1,5 @@
 ﻿using System;
+using Anticaptcha.Exceptions;
 using Newtonsoft.Json;
 
 namespace Anticaptcha.ApiRequests{
@@ -13,10 +14,10 @@ namespace Anticaptcha.ApiRequests{
         public string ErrorCode;
 
         [JsonIgnore]
-        internal bool Failed => ErrorId > 0;
+        internal bool IsFailed => ErrorId > 0;
 
         public AnticaptchaApiException ExtractException(){
-            if (!Failed) throw new Exception();
+            if (!IsFailed) throw new Exception();
 
             return new AnticaptchaApiException(this);
         }
